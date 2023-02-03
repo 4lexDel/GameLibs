@@ -1,0 +1,46 @@
+body {
+    margin: 0px;
+    overflow: hidden;
+    background-color: bisque;
+}
+
+canvas {
+    background-color: transparent;
+}
+
+.options {
+    z-index: 1;
+    position: fixed;
+    right: 0px;
+    display: block;
+    background-color: rgba(82, 130, 176, 0.8);
+    height: max-content;
+    width: max-content;
+    padding-right: 7px;
+    padding-left: 7px;
+}
+
+.svg-icon {
+    width: 40px;
+    height: 40px;
+    margin: 10px;
+    display: block;
+    transition-duration: 0.7s;
+    padding-top: 15px;
+    padding-bottom: 15px;
+}
+
+.svg-icon:hover {
+    transition-duration: 0.2s;
+    transition-timing-function: ease-in-out;
+    /* transform: rotate(60deg); */
+    transform: translate(-6px) rotate(5deg);
+}
+
+.svg-icon:hover path {
+    fill: blue;
+}
+
+.svg-icon:active path {
+    fill: red;
+}
