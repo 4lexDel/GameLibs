@@ -8,24 +8,29 @@ class Game extends GameBase { //A renommer ?
     init() {
         this.start = false;
 
-        this.map = new Tilemap(81, this.canvas.width, this.canvas.height);
+        this.bornConditions = [3];
+        this.surviveConditions = [2, 3];
+
+        this.resize();
+
+        this.initMap(51);
+
+        this.initEvent();
+
+        /*---------Draw settings----------*/
+        this.FPS = 15;
+        this.prevTick = 0;
+        this.draw();
+    }
+
+    initMap(size) {
+        this.map = new Tilemap(size, this.canvas.width, this.canvas.height);
 
         let voidTile = new TileSet(0, "rgb(240,240,240)");
         let cellTile = new TileSet(1, "black");
 
         this.map.addTileSet(voidTile);
         this.map.addTileSet(cellTile);
-
-        this.resize();
-        this.map.resize(this.canvas.width, this.canvas.height);
-
-        this.initEvent();
-
-
-        /*---------Draw settings----------*/
-        this.FPS = 100;
-        this.prevTick = 0;
-        this.draw();
     }
 
     initEvent() {
@@ -33,22 +38,41 @@ class Game extends GameBase { //A renommer ?
 
         this.canvas.onmousedown = (e) => {
             this.startDrag = true;
-            this.editMap(e);
+            this.mouseEditMap(e);
             this.start = false;
         }
 
         this.canvas.onmousemove = (e) => {
             if (this.startDrag) {
-                this.editMap(e);
+                this.mouseEditMap(e);
             }
         }
 
         this.canvas.onmouseup = (e) => {
             if (this.startDrag) {
                 this.startDrag = false;
-                this.editMap(e);
+                this.mouseEditMap(e);
             }
         }
+
+        this.canvas.addEventListener('touchstart', (e) => {
+            this.startDrag = true;
+
+            this.touchEditMap(e);
+        }, false);
+
+        this.canvas.addEventListener('touchmove', (e) => {
+            if (this.startDrag) {
+                this.touchEditMap(e);
+            }
+
+        }, false);
+
+        this.canvas.addEventListener('touchend', (e) => {
+            this.startDrag = false;
+
+            this.touchEditMap(e);
+        }, false);
 
         window.onresize = (e) => {
             this.resize();
@@ -65,6 +89,29 @@ class Game extends GameBase { //A renommer ?
             // this.map.resetGrid();
             // this.draw();
             this.start = !this.start;
+        });
+
+        document.querySelector("#generateMap").addEventListener("click", () => {
+            let size = document.getElementById("numberCell").value;
+
+            this.initMap(size);
+        });
+
+        document.querySelector("#validSettings").addEventListener("click", () => {
+            let value = document.getElementById("fpsInput").value;
+            this.FPS = value;
+
+            let bornSelect = document.getElementById("bornCondition");
+            let bornValues = this.getSelectValues(bornSelect).map(val => parseInt(val));
+
+            let surviveSelect = document.getElementById("surviveCondition");
+            let surviveValues = this.getSelectValues(surviveSelect).map(val => parseInt(val));
+
+            // console.log(bornValues);
+            // console.log(surviveValues);
+            this.bornConditions = bornValues;
+            this.surviveConditions = surviveValues;
+
         });
 
         document.addEventListener("keyup", (e) => { //KEYBOARD EVENT
@@ -95,11 +142,31 @@ class Game extends GameBase { //A renommer ?
         });
     }
 
-    editMap(e) {
+    getSelectValues(select) {
+        var result = [];
+        var options = select && select.options;
+        var opt;
+
+        for (var i = 0, iLen = options.length; i < iLen; i++) {
+            opt = options[i];
+
+            if (opt.selected) {
+                result.push(opt.value || opt.text);
+            }
+        }
+        return result;
+    }
+
+    mouseEditMap(e) {
         let coord = MouseControl.getMousePos(this.canvas, e);
         let val = e.which == 1 ? 1 : 0;
         this.map.setTileID(coord.x, coord.y, val);
         //this.draw();
+    }
+
+    touchEditMap(e) {
+        let coord = TouchControl.getTouchPos(this.canvas, e);
+        this.map.setTileID(coord.x, coord.y, 1);
     }
 
     draw() {
@@ -116,16 +183,16 @@ class Game extends GameBase { //A renommer ?
         if (this.start) this.calculateNextIteration([3], [2, 3]);
     }
 
-    calculateNextIteration(bornConditions, surviveConditions) { //0 => dead / 1 => alive / 2 => will born / 3 => will die
+    calculateNextIteration() { //0 => dead / 1 => alive / 2 => will born / 3 => will die
         var update = false;
 
         for (let x = 0; x < this.map.grid.length; x++) {
             for (let y = 0; y < this.map.grid[x].length; y++) {
                 let nbNeighboors = this.countNeighboors(x, y);
 
-                if (this.map.grid[x][y] == 0 && bornConditions.indexOf(nbNeighboors) != -1) {
+                if (this.map.grid[x][y] == 0 && this.bornConditions.indexOf(nbNeighboors) != -1) {
                     this.map.grid[x][y] = 2;
-                } else if (this.map.grid[x][y] == 1 && surviveConditions.indexOf(nbNeighboors) == -1) {
+                } else if (this.map.grid[x][y] == 1 && this.surviveConditions.indexOf(nbNeighboors) == -1) {
                     this.map.grid[x][y] = 3;
                 }
             }

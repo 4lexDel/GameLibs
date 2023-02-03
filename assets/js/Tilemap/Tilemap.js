@@ -15,6 +15,11 @@ class Tilemap {
         this.tileSets.push(tileSet);
     }
 
+    updateNbSquareX(nb) {
+        this.nbSquareX = nb;
+        this.resize(this.canvasWidth, this.canvasHeight);
+    }
+
     resize(canvasWidth, canvasHeight) {
         this.canvasWidth = canvasWidth;
         this.canvasHeight = canvasHeight;
