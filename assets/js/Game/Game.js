@@ -13,7 +13,7 @@ class Game extends GameBase { //A renommer ?
 
         this.resize();
 
-        this.initMap(51);
+        this.initMap(21);
 
         this.initEvent();
 
